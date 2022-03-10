@@ -1,0 +1,250 @@
+---
+title: "Comparacion de métodos para el estudio y monitore de arrecifes coralinos"
+author: "Ana M. Palacio-Castro"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    code_folding: hide
+    df_print: paged
+    fig_height: 8
+    fig_width: 8
+    toc: yes
+    toc_float: yes
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
+                      options(knitr.kable.NA = '',
+                      rows.print=48))
+```
+
+# Libraries and settings
+
+```{r, include=FALSE}
+# Libraries
+    #library(plyr)
+    library(tidyverse)
+    #library(reshape2)
+    #library(lubridate)
+    #library(knitr)
+    ##library(dplyr)
+    #library(broom)
+
+#Plots
+    library(ggpubr)
+    library(ggthemes)
+    library(ggplot2)
+    #library(gridExtra)
+    #library(ggExtra)
+    
+#Models     
+    library(lmodel2)    
+    library(lmerTest)
+    library(emmeans)
+    #library(modelsummary) # model results in table
+    #library(lsmeans) #cld functon 
+    #library(jtools) # Plot modesl
+    #library(kableExtra) # ANOVA tables
+
+# Plots
+MyTheme<-theme_bw() +  
+theme(legend.position="top",
+          plot.background=element_blank(),
+          #axis.text.x = element_text(angle = 90, vjust = 0.5),
+          axis.title.x=element_blank(),
+          axis.text.x=element_blank(),
+          panel.grid.major.y = element_blank(),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor.x = element_blank(),
+          panel.grid.minor.y = element_blank(),
+          legend.box.background = element_rect(),
+          #legend.title = element_blank(),
+          panel.background =element_rect(fill = NA, 
+                                         color = "black"))
+
+```
+
+# Import and format data
+
+```{r, include=FALSE}
+# 1. Get general cover data
+  General.data<-read.csv("Datos/Datos_Categorias_generales.csv", header = T)
+  summary(General.data)
+  General.data<-General.data[, (1:14) ]
+  Factors<-c("Método", "Zona", "Sitio", "Buzo", "Transecto", "Réplica")
+  General.data<-General.data %>% mutate_at(Factors, factor)
+
+# 2. Index data
+  Index.data<-read.csv("Datos/Riqueza_Tiempo.csv", header = T)
+  summary(Index.data)
+  Index.data<-Index.data[, (1:20) ]
+  Factors<-c("Método", "Zona", "Sitio", "Buzo", "Transecto")
+  Index.data<-Index.data %>% mutate_at(Factors, factor)
+
+```
+
+# Coral cover
+
+## Model
+
+```{r}
+General.data$T_Coral<- asin(sqrt(General.data$Coral/100))
+
+Coral_Cover_model<-lmer(T_Coral ~ 1 + Zona * Método + 
+                          (1|Zona:Sitio) + (1|Buzo), data = General.data )
+
+ # summary(Coral_Cover_model)                          
+  anova(Coral_Cover_model)
+  ranova(Coral_Cover_model)                          
+```
+
+## Plot
+
+```{r}
+Coral_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
+  MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
+  stat_summary(aes(x=Método, y=Coral, fill=Método, group=Método),
+                 fun.data = "mean_cl_boot", geom = "bar", 
+                 position=position_dodge(width=0.8), alpha=0.8)+
+   stat_summary(aes(x=Método, y=Coral, group=Método, color=Método),
+                 fun.data = "mean_cl_boot", geom = "errorbar", 
+                 position=position_dodge(width=0.8))+
+   geom_jitter( aes (x=Método, y=Coral, shape=Buzo, fill=Método, group=Método))+
+    scale_y_continuous(limits = c(0,100),
+                      expand = c(0.03, 0.03),
+                      breaks = seq(0, 100, 20),
+                      name=expression("Cobertura de coral (%)"))
+Coral_Cover
+```
+
+# Algae cover
+
+## Model
+
+```{r}
+General.data$T_Alga<- asin(sqrt((General.data$Alga/100)))
+
+Alga_Cover_model<-lmer(T_Alga~ Zona * Método * Zona:Sitio * Buzo + 
+                          (1|Zona:Sitio) + (1|Buzo), data = General.data )
+
+  #summary(Alga_Cover_model)                          
+  anova(Alga_Cover_model)
+  ranova(Alga_Cover_model)                          
+```
+
+## Plot
+
+```{r}
+Algae_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
+  MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
+  stat_summary(aes(x=Método, y=Alga, fill=Método),
+                 fun.data = "mean_cl_boot", geom = "bar", 
+                 position=position_dodge(width=0.8), alpha=0.8)+
+  
+  stat_summary(aes(x=Método, y=Alga, colour=Método),
+                 fun.data = "mean_cl_boot", geom = "errorbar", 
+                 position=position_dodge(width=0.8))+
+  
+  stat_summary(aes(x=Método, y=Alga, group=Buzo),
+                 fun.data = "mean_cl_boot", geom = "errorbar", 
+                 position=position_dodge(width=0.8))+
+  stat_summary(aes(x=Método, y=Alga, shape=Buzo),
+                 fun.data = "mean_cl_boot", geom = "point", 
+                 position=position_dodge(width=0.8))+
+  geom_jitter( aes (x=Método, y=Alga, shape=Buzo, fill=Método, group=Buzo))+
+  scale_y_continuous(limits = c(0, 90),
+                      expand = c(0.03, 0.3),
+                      breaks = seq(0, 100, 20),
+                      name=expression("Cobertura de algas (%)"))
+Algae_Cover
+```
+
+# Substrate cover
+
+## Model
+
+```{r}
+General.data$T_Sustrato<- acos(General.data$Sustrato /100)
+
+Sus_Cover_model<-lmer(T_Sustrato~ Zona * Método * Zona:Sitio * Buzo + 
+                          (1|Zona:Sitio) + (1|Buzo), data = General.data )
+
+  #summary(Sus_Cover_model)                          
+  anova(Sus_Cover_model)
+  ranova(Sus_Cover_model)                          
+```
+
+## Plot
+
+```{r}
+Substrate_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
+  MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
+  stat_summary(aes(x=Método, y=Sustrato, fill=Método),
+                 fun.data = "mean_cl_boot", geom = "bar", 
+                 position=position_dodge(width=0.8), alpha=0.8)+
+  
+  stat_summary(aes(x=Método, y=Sustrato, colour=Método),
+                 fun.data = "mean_cl_boot", geom = "errorbar", 
+                 position=position_dodge(width=0.8))+
+  
+  stat_summary(aes(x=Método, y=Sustrato, group=Buzo),
+                 fun.data = "mean_cl_boot", geom = "errorbar", 
+                 position=position_dodge(width=0.8))+
+  stat_summary(aes(x=Método, y=Sustrato, shape=Buzo),
+                 fun.data = "mean_cl_boot", geom = "point", 
+                 position=position_dodge(width=0.8))+
+  geom_jitter( aes (x=Método, y=Sustrato, shape=Buzo, fill=Método, group=Buzo))+
+  scale_y_continuous(limits = c(0,80),
+                      expand = c(0.03, 0.3),
+                      breaks = seq(0, 100, 20),
+                      name=expression("Cobertura de sustrato (%)"))
+Substrate_Cover
+```
+
+# Coral richness
+
+## Model
+
+```{r}
+Richness_model<-lmer(Riqueza_Media ~ Zona * Método  +  (1|Zona:Sitio) + (1|Buzo), data = Index.data )
+
+ # summary(Richness_model)                          
+  anova(Richness_model)
+  ranova(Richness_model)                          
+```
+
+## Plot
+
+```{r}
+Coral_Richness<- ggplot(Index.data) + facet_grid(~Transecto)+
+  MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
+  stat_summary(aes(x=Método, y=Riqueza_Media, fill=Método, group=Método),
+                 fun.data = "mean_cl_boot", geom = "bar", 
+                 position=position_dodge(width=0.8), alpha=0.8)+
+   stat_summary(aes(x=Método, y=Riqueza_Media, group=Método, color=Método),
+                 fun.data = "mean_cl_boot", geom = "errorbar", 
+                 position=position_dodge(width=0.8))+
+   geom_jitter( aes (x=Método, y=Riqueza_Media, shape=Buzo, fill=Método, group=Método))+
+    scale_y_continuous(limits = c(0,6),
+                      expand = c(0.03, 0.03),
+                      breaks = seq(0, 6, 1),
+                      name=expression("Riqueza de corals (S)"))
+Coral_Richness
+```
+
+# Chapter figure 
+
+```{r, echo=FALSE, fig.height=8, fig.width=8}
+Figure<-ggarrange(Coral_Cover, Algae_Cover, Coral_Richness,
+          labels = c("A", "B", "C"),
+          ncol = 1, nrow = 3)
+Figure
+
+#ggsave(file="Chapter_figure.svg", plot=Figure, dpi = 300, width=7, height=8)
+```
+
+
