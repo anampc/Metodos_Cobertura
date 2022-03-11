@@ -1,6 +1,6 @@
 ---
 title: "Comparacion de métodos para el estudio y monitore de arrecifes coralinos"
-author: "Ana M. Palacio-Castro"
+author: "Ana M. Palacio-Castro & Fernando A. Zapata"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
@@ -57,6 +57,7 @@ theme(legend.position="top",
           #axis.text.x = element_text(angle = 90, vjust = 0.5),
           axis.title.x=element_blank(),
           axis.text.x=element_blank(),
+          axis.ticks.x = element_blank(),
           panel.grid.major.y = element_blank(),
           panel.grid.major.x = element_blank(),
           panel.grid.minor.x = element_blank(),
@@ -71,6 +72,7 @@ theme(legend.position="top",
 # Import and format data
 
 ```{r, include=FALSE}
+
 # 1. Get general cover data
   General.data<-read.csv("Datos/Datos_Categorias_generales.csv", header = T)
   summary(General.data)
@@ -78,13 +80,19 @@ theme(legend.position="top",
   Factors<-c("Método", "Zona", "Sitio", "Buzo", "Transecto", "Réplica")
   General.data<-General.data %>% mutate_at(Factors, factor)
 
-# 2. Index data
-  Index.data<-read.csv("Datos/Riqueza_Tiempo.csv", header = T)
-  summary(Index.data)
-  Index.data<-Index.data[, (1:20) ]
+# 2. Riqueza
+  Riqueza.data<-read.csv("Datos/Riqueza_Bentos.csv", header = T)
+  summary(Riqueza.data)
+  Riqueza.data<-Riqueza.data[, -(6:47) ]
   Factors<-c("Método", "Zona", "Sitio", "Buzo", "Transecto")
-  Index.data<-Index.data %>% mutate_at(Factors, factor)
+  Riqueza.data<-Riqueza.data %>% mutate_at(Factors, factor)
+  
+# 3. Time
+  Time.data<-General.data[, -(10:14) ]
+  Time.data <- gather(Time.data, Fase, minutos, Tiempo.Campo..min.:Tiempo.Laboratorio..min., factor_key=TRUE)
 
+  summary(Time.data)
+  
 ```
 
 # Coral cover
@@ -95,7 +103,12 @@ theme(legend.position="top",
 General.data$T_Coral<- asin(sqrt(General.data$Coral/100))
 
 Coral_Cover_model<-lmer(T_Coral ~ 1 + Zona * Método + 
-                          (1|Zona:Sitio) + (1|Buzo), data = General.data )
+                          (1|Zona:Sitio) + (1|Buzo), 
+                        data = General.data)
+
+Coral_Cover_model<-glmer(Coral/100 ~ 1 + Zona * Método + 
+                          (1|Zona:Sitio) + (1|Buzo), 
+                        data = General.data, family="binomial")
 
  # summary(Coral_Cover_model)                          
   anova(Coral_Cover_model)
@@ -114,10 +127,12 @@ Coral_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
                  fun.data = "mean_cl_boot", geom = "errorbar", 
                  position=position_dodge(width=0.8))+
    geom_jitter( aes (x=Método, y=Coral, shape=Buzo, fill=Método, group=Método))+
-    scale_y_continuous(limits = c(0,100),
+    scale_y_continuous(limits = c(0,99),
                       expand = c(0.03, 0.03),
-                      breaks = seq(0, 100, 20),
-                      name=expression("Cobertura de coral (%)"))
+                      breaks = seq(0, 99, 20),
+                      name=expression("Cobertura de coral (%)"))+
+  theme(strip.background = element_blank(),
+   strip.text.x = element_blank())
 Coral_Cover
 ```
 
@@ -149,17 +164,20 @@ Algae_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
                  fun.data = "mean_cl_boot", geom = "errorbar", 
                  position=position_dodge(width=0.8))+
   
-  stat_summary(aes(x=Método, y=Alga, group=Buzo),
-                 fun.data = "mean_cl_boot", geom = "errorbar", 
-                 position=position_dodge(width=0.8))+
-  stat_summary(aes(x=Método, y=Alga, shape=Buzo),
-                 fun.data = "mean_cl_boot", geom = "point", 
-                 position=position_dodge(width=0.8))+
+  # stat_summary(aes(x=Método, y=Alga, group=Buzo),
+  #                fun.data = "mean_cl_boot", geom = "errorbar", 
+  #                position=position_dodge(width=0.8))+
+  # stat_summary(aes(x=Método, y=Alga, shape=Buzo),
+  #                fun.data = "mean_cl_boot", geom = "point", 
+  #                position=position_dodge(width=0.8))+
   geom_jitter( aes (x=Método, y=Alga, shape=Buzo, fill=Método, group=Buzo))+
   scale_y_continuous(limits = c(0, 90),
                       expand = c(0.03, 0.3),
                       breaks = seq(0, 100, 20),
-                      name=expression("Cobertura de algas (%)"))
+                      name=expression("Cobertura de algas (%)"))+
+  theme(legend.position="none",
+        strip.background = element_blank(),
+        strip.text.x = element_blank())
 Algae_Cover
 ```
 
@@ -190,13 +208,12 @@ Substrate_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
   stat_summary(aes(x=Método, y=Sustrato, colour=Método),
                  fun.data = "mean_cl_boot", geom = "errorbar", 
                  position=position_dodge(width=0.8))+
-  
-  stat_summary(aes(x=Método, y=Sustrato, group=Buzo),
-                 fun.data = "mean_cl_boot", geom = "errorbar", 
-                 position=position_dodge(width=0.8))+
-  stat_summary(aes(x=Método, y=Sustrato, shape=Buzo),
-                 fun.data = "mean_cl_boot", geom = "point", 
-                 position=position_dodge(width=0.8))+
+  # stat_summary(aes(x=Método, y=Sustrato, group=Buzo),
+  #                fun.data = "mean_cl_boot", geom = "errorbar", 
+  #                position=position_dodge(width=0.8))+
+  # stat_summary(aes(x=Método, y=Sustrato, shape=Buzo),
+  #                fun.data = "mean_cl_boot", geom = "point", 
+  #                position=position_dodge(width=0.8))+
   geom_jitter( aes (x=Método, y=Sustrato, shape=Buzo, fill=Método, group=Buzo))+
   scale_y_continuous(limits = c(0,80),
                       expand = c(0.03, 0.3),
@@ -210,7 +227,7 @@ Substrate_Cover
 ## Model
 
 ```{r}
-Richness_model<-lmer(Riqueza_Media ~ Zona * Método  +  (1|Zona:Sitio) + (1|Buzo), data = Index.data )
+Richness_model<-lmer(Riqueza..S. ~ Zona * Método  +  (1|Zona:Sitio) + (1|Buzo), data = Riqueza.data)
 
  # summary(Richness_model)                          
   anova(Richness_model)
@@ -220,31 +237,83 @@ Richness_model<-lmer(Riqueza_Media ~ Zona * Método  +  (1|Zona:Sitio) + (1|Buzo
 ## Plot
 
 ```{r}
-Coral_Richness<- ggplot(Index.data) + facet_grid(~Transecto)+
+Coral_Richness<- ggplot(Riqueza.data) + facet_grid(~Transecto)+
   MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
-  stat_summary(aes(x=Método, y=Riqueza_Media, fill=Método, group=Método),
+  stat_summary(aes(x=Método, y=Riqueza..S., fill=Método, group=Método),
                  fun.data = "mean_cl_boot", geom = "bar", 
                  position=position_dodge(width=0.8), alpha=0.8)+
-   stat_summary(aes(x=Método, y=Riqueza_Media, group=Método, color=Método),
+   stat_summary(aes(x=Método, y=Riqueza..S., group=Método, color=Método),
                  fun.data = "mean_cl_boot", geom = "errorbar", 
                  position=position_dodge(width=0.8))+
-   geom_jitter( aes (x=Método, y=Riqueza_Media, shape=Buzo, fill=Método, group=Método))+
+   geom_jitter( aes (x=Método, y=Riqueza..S., shape=Buzo, 
+                     fill=Método, group=Método))+
     scale_y_continuous(limits = c(0,6),
-                      expand = c(0.03, 0.03),
+                      expand = c(0.01, 0.01),
                       breaks = seq(0, 6, 1),
-                      name=expression("Riqueza de corals (S)"))
+                      name=expression("Riqueza de corales (S)"))+
+  theme(legend.position="none",
+        strip.background = element_blank(),
+        strip.text.x = element_blank())
 Coral_Richness
+```
+
+# Time
+
+## Model
+
+```{r}
+Time_model<-lmer(Riqueza..S. ~ Zona * Método  +  (1|Zona:Sitio) + (1|Buzo), data = Riqueza.data)
+
+ # summary(Richness_model)                          
+  anova(Richness_model)
+  ranova(Richness_model)                          
+```
+
+## Plot
+
+```{r}
+Method_time<- ggplot(Time.data) +
+  facet_grid(~Transecto, switch = "both")+
+  MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
+  
+   stat_summary(aes(x=Método, y=Tiempo.Total..min.,
+                   fill=Método, group=Método),
+                 fun.data = "mean_cl_boot", geom = "bar",
+                 position=position_dodge(width=0.8), alpha=0.8)+
+   stat_summary(aes(x=Método, y=Tiempo.Total..min.,
+                    group=Método, color=Método),
+                 fun.data = "mean_cl_boot", geom = "errorbar",
+                 position=position_dodge(width=0.8))+
+  # geom_jitter( aes (x=Método, y=minutos,
+  #                   shape=Buzo,
+  #                   fill=Método, group=Método), alpha=0.5, 
+  #              data = Time.data[Time.data$Fase=="Tiempo.Campo..min.", ])+
+  geom_jitter( aes (x=Método, y=Tiempo.Total..min.,
+                    shape=Buzo,
+                    fill=Método, group=Método), alpha=1, 
+               data = Time.data[Time.data$Fase=="Tiempo.Campo..min.", ])+
+  
+  # geom_jitter( aes (x=Método, 
+  #                   y=Tiempo.Campo..min.+ Tiempo.Laboratorio..min.,
+  #                   shape=Buzo,
+  #                     fill=Método, group=Método), alpha=0.1)+
+  scale_y_continuous(limits = c(0,60),
+                      expand = c(0.01, 0.01),
+                      breaks = seq(0, 60, 15),
+                      name=expression("Tiempo total (min)"))+
+  theme(legend.position="none")
+Method_time
 ```
 
 # Chapter figure 
 
 ```{r, echo=FALSE, fig.height=8, fig.width=8}
-Figure<-ggarrange(Coral_Cover, Algae_Cover, Coral_Richness,
-          labels = c("A", "B", "C"),
-          ncol = 1, nrow = 3)
+Figure<-ggarrange(Coral_Cover, Algae_Cover, Coral_Richness, Method_time,
+          labels = c("A", "B", "C", "D"),
+          ncol = 1, nrow = 4, heights=c(1.2, 0.8, .8, .8, 1.2))
 Figure
 
-#ggsave(file="Chapter_figure.svg", plot=Figure, dpi = 300, width=7, height=8)
+#ggsave(file="Chapter_figure.svg", plot=Figure, dpi = 300, width=6.5, height=9)
 ```
 
 
