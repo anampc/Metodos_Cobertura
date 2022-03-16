@@ -1,4 +1,4 @@
-Método,Zona,Sitio,Transecto,Buzo,Réplica,Tiempo Campo (min),Tiempo Laboratorio (min),Tiempo Total (min),Día,Coral,Esponja,Alga,Sustrato,arco %C,arco% S,arco% A,arco % SI,,Notas de los datos
+Metodo,Zona,Sitio,Transecto,Buzo,Replica,Tiempo Campo (min),Tiempo Laboratorio (min),Tiempo Total (min),Día,Coral,Esponja,Alga,Sustrato,arco %C,arco% S,arco% A,arco % SI,,Notas de los datos
 Fotocuadrante ,Planicie,1,Planicie_1,A,1,22,31,53,7,52.321,0,26.429,21.25,0.809,0,0.54,0.479,,C=CORAL
 Fotocuadrante ,Planicie,1,Planicie_1,A,2,21,22,43,7,42.5,0,41.429,16.071,0.71,0,0.699,0.412,,S= ESPONJA
 Fotocuadrante ,Planicie,1,Planicie_1,C,1,30,35,65,7,52.5,0,2.143,45.357,0.81,0,0.147,0.739,,A=ALGA
