@@ -29,14 +29,13 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
 ```{r, include=FALSE}
 # Libraries
     library(tidyverse)
+
 #Plots
     library(ggpubr)
     library(ggthemes)
     library(ggplot2)
 
 #Models     
-    library(lmodel2)    
-    library(lmerTest)
     library(emmeans)
     library(multcomp)
 
@@ -56,7 +55,6 @@ theme(legend.position="top",
           #legend.title = element_blank(),
           panel.background =element_rect(fill = NA, 
                                          color = "black"))
-
 ```
 
 # Import and format data
@@ -245,9 +243,14 @@ Substrate_Cover
 
 # 4. Coral richness
 
-## Model
+```{r}
+hist(Riqueza.data$Riqueza..S.)
+```
+
+## Modelo Gaussiano
 
 ```{r}
+
 Richness_model<-lm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona + 
                           Metodo + Buzo + Buzo*Metodo +
                           Zona*Metodo + Zona*Buzo +
@@ -268,14 +271,45 @@ Richness_model<-lm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona +
   
   Comp8<-emmeans(Richness_model, ~Buzo|Metodo)
   pairs(Comp8, adj="tukey")   
+  
 ```
+
+## Modelo Poisson
+
+```{r}
+Richness_model_2<-glm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona + 
+                          Metodo + Buzo + Buzo*Metodo +
+                          Zona*Metodo + Zona*Buzo +
+                          Zona*Metodo*Buzo + 
+                          Sitio%in%Zona*Metodo +
+                          Sitio%in%Zona*Buzo + 
+                          Sitio%in%Zona*Metodo*Buzo,
+                          data = Riqueza.data, 
+                          family = poisson(link = "log"))
+  
+  
+  # summary(Richness_model)                          
+  anova(Richness_model_2)
+  par(mfrow=c(1,2))
+  plot(Richness_model_2)
+  par(mfrow=c(1,1))
+  
+  Comp7<-emmeans(Richness_model_2, ~Metodo|Zona)
+  pairs(Comp7, adj="tukey")
+  
+  Comp8<-emmeans(Richness_model_2, ~Buzo|Metodo)
+  pairs(Comp8, adj="tukey")   
+```
+
 
 ## Plot
 
 ```{r}
+
 Coral_Richness<- ggplot(Riqueza.data) + facet_grid(~Transecto)+
   MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
-  stat_summary(aes(x=Metodo, y=Riqueza..S., fill=Metodo, group=Metodo),
+  stat_summary(aes(x=Metodo, y=Riqueza..S.,
+                   fill=Metodo, group=Metodo),
                  fun.data = "mean_cl_boot", geom = "bar", 
                  position=position_dodge(width=0.8), alpha=0.8)+
    stat_summary(aes(x=Metodo, y=Riqueza..S., group=Metodo, color=Metodo),
