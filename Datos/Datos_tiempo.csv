@@ -1,4 +1,4 @@
-Metodo,Zona,Sitio,Buzo,Replica,Tiempo toma de datos,Tiempo digitalización de datos,Tiempo Total,Fecha,Minutos toma de datos,Minutos digitalización de datos,Tiempo Total,Día,Transecto
+Metodo,Zona,Sitio,Buzo,Replica,Tiempo toma de datos,Tiempo digitalización de datos,Tiempo Total,Fecha,Minutos_campo,Minutos_lab,Tiempo Total,Día,Transecto
 Fotocuadrantes,Planicie,1,A,1,12:22:00 AM,12:31:00 AM,12:53:00 AM,07/10/09,22,31,53,7,Planicie_1
 Fotocuadrantes,Planicie,1,C,1,12:21:00 AM,12:22:00 AM,12:43:00 AM,07/10/09,21,22,43,7,Planicie_1
 Fotocuadrantes,Planicie,1,B,1,12:30:00 AM,12:35:00 AM,01:05:00 AM,07/10/09,30,35,65,7,Planicie_1

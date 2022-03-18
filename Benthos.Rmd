@@ -21,7 +21,7 @@ editor_options:
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE, 
                       options(knitr.kable.NA = '',
-                      rows.print=48))
+                      rows.print=12, digits = 3))
 ```
 
 # Libraries and settings
@@ -92,13 +92,14 @@ theme(legend.position="top",
 # Transformacion de los datos
 General.data$T_Coral<- asin(sqrt(General.data$Coral/100))
 
-Coral_Cover_model <- lm(T_Coral ~1 + Zona + Sitio%in%Zona + 
-                          Metodo + Buzo + Buzo*Metodo +
-                          Zona*Metodo + Zona*Buzo +
-                          Zona*Metodo*Buzo + 
-                          Sitio%in%Zona*Metodo +
-                          Sitio%in%Zona*Buzo + 
-                          Sitio%in%Zona*Metodo*Buzo,
+Coral_Cover_model <- lm(T_Coral ~1 +  Metodo + Buzo + 
+                          Zona + Sitio%in%Zona + 
+                          Metodo*Buzo +
+                          Metodo*Zona + Buzo*Zona +
+                          Metodo*Buzo*Zona + 
+                          Metodo*Sitio%in%Zona +
+                          Buzo*Sitio%in%Zona + 
+                          Metodo*Buzo*Sitio%in%Zona,
                         data = General.data)
 
 # summary(Coral_Cover_model)                          
@@ -121,11 +122,14 @@ Coral_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
   MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
   stat_summary(aes(x=Metodo, y=Coral, fill=Metodo, group=Metodo),
                  fun.data = "mean_cl_boot", geom = "bar", 
-                 position=position_dodge(width=0.8), alpha=0.8)+
+                 position=position_dodge(width=0.8), alpha=0.7)+
    stat_summary(aes(x=Metodo, y=Coral, group=Metodo, color=Metodo),
                  fun.data = "mean_cl_boot", geom = "errorbar", 
                  position=position_dodge(width=0.8))+
-   geom_jitter( aes (x=Metodo, y=Coral, shape=Buzo, fill=Metodo, group=Metodo))+
+   geom_point(aes (x=Metodo, y=Coral, shape=Buzo, 
+                   fill=Metodo), position = position_dodge(0.8))+
+   #geom_jitter( aes (x=Metodo, y=Coral, shape=Buzo, 
+  #                   fill=Metodo, group=Metodo))+
     scale_y_continuous(limits = c(0,99),
                       expand = c(0.03, 0.03),
                       breaks = seq(0, 99, 20),
@@ -144,13 +148,14 @@ Coral_Cover<-Coral_Cover +
 ```{r}
 General.data$T_Alga<- asin(sqrt((General.data$Alga/100)))
 
-Alga_Cover_model<-lm(T_Alga~ 1 + Zona + Sitio%in%Zona + 
-                          Metodo + Buzo + Buzo*Metodo +
-                          Zona*Metodo + Zona*Buzo +
-                          Zona*Metodo*Buzo + 
-                          Sitio%in%Zona*Metodo +
-                          Sitio%in%Zona*Buzo + 
-                          Sitio%in%Zona*Metodo*Buzo,
+Alga_Cover_model<-lm(T_Alga~ 1 + Metodo + Buzo +
+                          Zona + Sitio%in%Zona + 
+                          Metodo*Buzo +
+                          Metodo*Zona + Buzo*Zona +
+                          Metodo*Buzo*Zona + 
+                          Metodo*Sitio%in%Zona +
+                          Buzo*Sitio%in%Zona + 
+                          Metodo*Buzo*Sitio%in%Zona,
                         data = General.data)
 
   #summary(Alga_Cover_model)                          
@@ -174,12 +179,15 @@ Algae_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
   MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
   stat_summary(aes(x=Metodo, y=Alga, fill=Metodo),
                  fun.data = "mean_cl_boot", geom = "bar", 
-                 position=position_dodge(width=0.8), alpha=0.8)+
+                 position=position_dodge(width=0.8), alpha=0.7)+
   
   stat_summary(aes(x=Metodo, y=Alga, colour=Metodo),
                  fun.data = "mean_cl_boot", geom = "errorbar", 
                  position=position_dodge(width=0.8))+
-  geom_jitter( aes (x=Metodo, y=Alga, shape=Buzo, fill=Metodo, group=Buzo))+
+  geom_point(aes (x=Metodo, y=Alga, shape=Buzo, 
+                   fill=Metodo), position = position_dodge(0.5))+
+   #geom_jitter( aes (x=Metodo, y=Alga, shape=Buzo, 
+  #                   fill=Metodo, group=Metodo))+
   scale_y_continuous(limits = c(0, 90),
                       expand = c(0.03, 0.3),
                       breaks = seq(0, 100, 20),
@@ -199,13 +207,14 @@ Algae_Cover<- Algae_Cover +
 ```{r}
 General.data$T_Sustrato<- acos(General.data$Sustrato /100)
 
-Sus_Cover_model<-lm(T_Sustrato ~  1 + Zona + Sitio%in%Zona + 
-                          Metodo + Buzo + Buzo*Metodo +
-                          Zona*Metodo + Zona*Buzo +
-                          Zona*Metodo*Buzo + 
-                          Sitio%in%Zona*Metodo +
-                          Sitio%in%Zona*Buzo + 
-                          Sitio%in%Zona*Metodo*Buzo,
+Sus_Cover_model<-lm(T_Sustrato ~  1 + Metodo + Buzo +
+                          Zona + Sitio%in%Zona + 
+                          Metodo*Buzo +
+                          Metodo*Zona + Buzo*Zona +
+                          Metodo*Buzo*Zona + 
+                          Metodo*Sitio%in%Zona +
+                          Buzo*Sitio%in%Zona + 
+                          Metodo*Buzo*Sitio%in%Zona,
                         data = General.data)
 
   #summary(Sus_Cover_model)                          
@@ -228,7 +237,7 @@ Substrate_Cover<- ggplot(General.data) + facet_grid(~Transecto)+
   MyTheme+ scale_shape_manual(values=c(21,22,25))+ 
   stat_summary(aes(x=Metodo, y=Sustrato, fill=Metodo),
                  fun.data = "mean_cl_boot", geom = "bar", 
-                 position=position_dodge(width=0.8), alpha=0.8)+
+                 position=position_dodge(width=0.8), alpha=0.7)+
   
   stat_summary(aes(x=Metodo, y=Sustrato, colour=Metodo),
                  fun.data = "mean_cl_boot", geom = "errorbar", 
@@ -251,13 +260,14 @@ hist(Riqueza.data$Riqueza..S.)
 
 ```{r}
 
-Richness_model<-lm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona + 
-                          Metodo + Buzo + Buzo*Metodo +
-                          Zona*Metodo + Zona*Buzo +
-                          Zona*Metodo*Buzo + 
-                          Sitio%in%Zona*Metodo +
-                          Sitio%in%Zona*Buzo + 
-                          Sitio%in%Zona*Metodo*Buzo,
+Richness_model<-lm(Riqueza..S. ~  1 + Metodo + Buzo +
+                          Zona + Sitio%in%Zona + 
+                          Metodo*Buzo +
+                          Metodo*Zona + Buzo*Zona +
+                          Metodo*Buzo*Zona + 
+                          Metodo*Sitio%in%Zona +
+                          Buzo*Sitio%in%Zona + 
+                          Metodo*Buzo*Sitio%in%Zona,
                           data = Riqueza.data)
 
  # summary(Richness_model)                          
@@ -277,13 +287,14 @@ Richness_model<-lm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona +
 ## Modelo Poisson
 
 ```{r}
-Richness_model_2<-glm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona + 
-                          Metodo + Buzo + Buzo*Metodo +
-                          Zona*Metodo + Zona*Buzo +
-                          Zona*Metodo*Buzo + 
-                          Sitio%in%Zona*Metodo +
-                          Sitio%in%Zona*Buzo + 
-                          Sitio%in%Zona*Metodo*Buzo,
+Richness_model_2<-glm(Riqueza..S. ~  1 + Metodo + Buzo +
+                          Zona + Sitio%in%Zona + 
+                          Metodo*Buzo +
+                          Metodo*Zona + Buzo*Zona +
+                          Metodo*Buzo*Zona + 
+                          Metodo*Sitio%in%Zona +
+                          Buzo*Sitio%in%Zona + 
+                          Metodo*Buzo*Sitio%in%Zona,
                           data = Riqueza.data, 
                           family = poisson(link = "log"))
   
@@ -311,12 +322,14 @@ Coral_Richness<- ggplot(Riqueza.data) + facet_grid(~Transecto)+
   stat_summary(aes(x=Metodo, y=Riqueza..S.,
                    fill=Metodo, group=Metodo),
                  fun.data = "mean_cl_boot", geom = "bar", 
-                 position=position_dodge(width=0.8), alpha=0.8)+
+                 position=position_dodge(width=0.8), alpha=0.7)+
    stat_summary(aes(x=Metodo, y=Riqueza..S., group=Metodo, color=Metodo),
                  fun.data = "mean_cl_boot", geom = "errorbar", 
                  position=position_dodge(width=0.8))+
-   geom_jitter( aes (x=Metodo, y=Riqueza..S., shape=Buzo, 
-                     fill=Metodo, group=Metodo))+
+   geom_point(aes (x=Metodo, y=Riqueza..S., shape=Buzo, 
+                   fill=Metodo), position = position_dodge(0.8))+
+   #geom_jitter( aes (x=Metodo, y=Riqueza..S., shape=Buzo, 
+  #                   fill=Metodo, group=Metodo))+
     scale_y_continuous(limits = c(0,6),
                       expand = c(0.01, 0.01),
                       breaks = seq(0, 6, 1),
@@ -333,17 +346,77 @@ Coral_Richness<-Coral_Richness +
 
 # 5. Time
 
-## Model
+## Model diving time
 
 ```{r}
-Time_model<-lm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona + 
-                          Metodo + Buzo + Buzo*Metodo +
+Time_model_underwater<-lm(Minutos_campo ~  1 + Metodo + Buzo + Buzo*Metodo +
+                          Zona + Sitio%in%Zona + 
                           Zona*Metodo + Zona*Buzo +
                           Zona*Metodo*Buzo + 
                           Sitio%in%Zona*Metodo +
                           Sitio%in%Zona*Buzo + 
                           Sitio%in%Zona*Metodo*Buzo,
-                        data = Riqueza.data)
+                          data = Time.data)
+
+ # summary(Time_model_underwater)                          
+  anova(Time_model_underwater)
+  par(mfrow=c(1,2))
+  plot(Time_model_underwater)
+  par(mfrow=c(1,1))
+  
+  Comp9<-emmeans(Time_model_underwater, ~Metodo)
+  Comp9
+  pairs(Comp9, adj="tukey")
+  
+  Comp10<-emmeans(Time_model_underwater, ~Metodo|Zona)
+  pairs(Comp10, adj="tukey")
+  
+  Comp11<-emmeans(Time_model_underwater, ~Buzo|Metodo)
+  pairs(Comp11, adj="tukey") 
+
+```
+
+## Model proccessing time
+
+```{r}
+Time_model_lab<-lm(Minutos_lab ~  1 + Metodo + Buzo + Buzo*Metodo +
+                          Zona + Sitio%in%Zona + 
+                          Zona*Metodo + Zona*Buzo +
+                          Zona*Metodo*Buzo + 
+                          Sitio%in%Zona*Metodo +
+                          Sitio%in%Zona*Buzo + 
+                          Sitio%in%Zona*Metodo*Buzo,
+                          data = Time.data)
+
+ # summary(Time_model_lab)                          
+  anova(Time_model_lab)
+  par(mfrow=c(1,2))
+  plot(Time_model_lab)
+  par(mfrow=c(1,1))
+  
+  Comp12<-emmeans(Time_model_lab, ~Metodo)
+  Comp12
+  pairs(Comp12, adj="tukey")
+  
+  Comp13<-emmeans(Time_model_lab, ~Metodo|Zona)
+  pairs(Comp13, adj="tukey")
+  
+  Comp14<-emmeans(Time_model_lab, ~Buzo|Metodo)
+  pairs(Comp14, adj="tukey") 
+
+```
+
+## Model total time
+
+```{r}
+Time_model<-lm(Tiempo.Total.1 ~  1 + Metodo + Buzo + Buzo*Metodo +
+                          Zona + Sitio%in%Zona + 
+                          Zona*Metodo + Zona*Buzo +
+                          Zona*Metodo*Buzo + 
+                          Sitio%in%Zona*Metodo +
+                          Sitio%in%Zona*Buzo + 
+                          Sitio%in%Zona*Metodo*Buzo,
+                          data = Time.data)
 
  # summary(Time_model)                          
   anova(Time_model)
@@ -351,11 +424,15 @@ Time_model<-lm(Riqueza..S. ~  1 + Zona + Sitio%in%Zona +
   plot(Time_model)
   par(mfrow=c(1,1))
   
-  Comp9<-emmeans(Time_model, ~Metodo|Zona)
-  pairs(Comp9, adj="tukey")
+  Comp15<-emmeans(Time_model, ~Metodo)
+  Comp15
+  pairs(Comp15, adj="tukey")
   
-  Comp10<-emmeans(Time_model, ~Buzo|Metodo)
-  pairs(Comp10, adj="tukey") 
+  Comp16<-emmeans(Time_model, ~Metodo|Zona)
+  pairs(Comp16, adj="tukey")
+  
+  Comp17<-emmeans(Time_model, ~Buzo|Metodo)
+  pairs(Comp17, adj="tukey") 
 
 ```
 
@@ -371,17 +448,18 @@ Method_time<- ggplot(Time.data) +
                  fun.data = "mean_cl_boot", geom = "bar",
                  position=position_dodge(width=0.8), alpha=0.5)+
   
-   stat_summary(aes(x=Metodo, y=Minutos.toma.de.datos,
+   stat_summary(aes(x=Metodo, y=Minutos_campo,
                    fill=Metodo, group=Metodo),
                  fun.data = "mean_cl_boot", geom = "bar",
-                 position=position_dodge(width=0.8), alpha=0.5)+
+                 position=position_dodge(width=0.8), alpha=0.7)+
    stat_summary(aes(x=Metodo, y=Tiempo.Total.1,
                     group=Metodo, color=Metodo),
                  fun.data = "mean_cl_boot", geom = "errorbar",
                  position=position_dodge(width=0.8))+
-  geom_jitter( aes (x=Metodo, y=Tiempo.Total.1,
-                    shape=Buzo,
-                    fill=Metodo, group=Metodo), alpha=1)+
+  geom_point(aes (x=Metodo, y=Tiempo.Total.1, shape=Buzo, 
+                   fill=Metodo), position = position_dodge(0.8))+
+   #geom_jitter( aes (x=Metodo, y=Riqueza..S., shape=Buzo, 
+  #                   fill=Metodo, group=Metodo))+
   
   scale_y_continuous(limits = c(0,60),
                       expand = c(0.01, 0.01),
@@ -402,6 +480,23 @@ Figure<-ggarrange(Coral_Cover, Algae_Cover, Coral_Richness, Method_time,
 Figure
 
 #ggsave(file="Chapter_figure.svg", plot=Figure, dpi = 300, width=6.5, height=9)
+```
+
+# Model summary 
+```{r}
+
+library(modelsummary) # model results in table
+
+Summary_models<-list("Corales (%)" = Coral_Cover_model, 
+                       "Algas (%)" = Alga_Cover_model, 
+                        "Riqueza (S)" = Richness_model_2, 
+                         "Tiempo" = Time_model)
+      
+modelsummary(Summary_models, stars = TRUE, 
+                   #statistic = c('std.error', 'p.value', 'conf.int'),
+                   title = 'Seasonal and spatial models'#,
+                   #coef_map=factor_order
+                   )
 ```
 
 # Packages used
