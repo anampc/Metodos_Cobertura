@@ -26,7 +26,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
 
 # Libraries and settings
 
-```{r, include=FALSE}
+```{r}
 # Libraries
     library(tidyverse)
 
@@ -39,7 +39,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
     library(emmeans)
     library(multcomp)
 
-# Plots
+# Plots theme
 MyTheme<-theme_bw() +  
 theme(legend.position="top",
           plot.background=element_blank(),
@@ -59,7 +59,7 @@ theme(legend.position="top",
 
 # Import and format data
 
-```{r, include=FALSE}
+```{r}
 
 # 1. Get general cover data
   General.data<-read.csv("Datos/Datos_Categorias_generales.csv", header = T)
